@@ -17,6 +17,8 @@ app.use(bodyParser.json());
 
 app.use('/public', express.static(`${process.cwd()}/public`));
 
+mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+
 const { Schema } = mongoose;
 
 const shortenUrlSchema = new Schema({
@@ -31,8 +33,6 @@ const createShortenURL = (url, done) => {
   let newURL = new ShortenURL({originalUrl: url});
 
   newURL.save(function(err, data){
-    if (err) return console.error(err);
-    lastId = data._id;
     done(null, data)
   });
 }
@@ -53,7 +53,10 @@ app.get('/api/hello', function(req, res) {
 });
 
 app.post('/api/shorturl/new', (req,res) => {
-  createShortenURL(req.body.url);
+  createShortenURL(req.body.url, function(){
+    lastId = data._id;
+    console.log(lastId)
+  });
   res.json({})
 });
 
